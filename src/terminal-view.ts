@@ -69,11 +69,15 @@ export class TerminalView extends ItemView {
 			cls: "claude-terminal-container",
 		});
 
+		// Get Obsidian's monospace font from CSS variable
+		const monoFont = getComputedStyle(document.body).getPropertyValue('--font-monospace').trim()
+			|| 'Menlo, Monaco, "Courier New", monospace';
+
 		// Initialize xterm.js
 		this.terminal = new Terminal({
 			cursorBlink: true,
 			fontSize: 14,
-			fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+			fontFamily: monoFont,
 			theme: {
 				background: "#1e1e1e",
 				foreground: "#d4d4d4",
@@ -102,11 +106,11 @@ export class TerminalView extends ItemView {
 				// Resize terminal
 				this.terminal.resize(cols, rows);
 
-				// Update PTY size - reduce cols by 2 to leave space for scrollbar
+				// Update PTY size - reduce cols by 4 to leave space for scrollbar
 				if (this.ptyProcess && this.ptyProcess.stdio[3]) {
 					const cmdio = this.ptyProcess.stdio[3] as any;
 					if (cmdio && typeof cmdio.write === 'function') {
-						const ptyCols = Math.max(1, cols - 2); // -2 for scrollbar space
+						const ptyCols = Math.max(1, cols - 4); // -4 for scrollbar space
 						cmdio.write(`${ptyCols}x${rows}\n`);
 					}
 				}
