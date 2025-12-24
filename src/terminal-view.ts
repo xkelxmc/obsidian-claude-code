@@ -3,8 +3,8 @@ import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import type ClaudeCodePlugin from "./main";
 import { spawn, type ChildProcessWithoutNullStreams } from "child_process";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore - Python script imported as string via custom loader
+import type { Writable } from "stream";
+// @ts-expect-error - Python script imported as string via custom loader
 import ptyWrapperPy from "./pty-wrapper.py";
 
 export const TERMINAL_VIEW_TYPE = "claude-code-terminal";
@@ -56,7 +56,7 @@ export class TerminalView extends ItemView {
 			text: "Relaunch",
 			cls: "claude-terminal-btn",
 		});
-		relaunchBtn.addEventListener("click", () => this.relaunch());
+		relaunchBtn.addEventListener("click", () => void this.relaunch());
 
 		const closeBtn = buttonsContainer.createEl("button", {
 			text: "Close",
@@ -108,11 +108,9 @@ export class TerminalView extends ItemView {
 
 				// Update PTY size - reduce cols by 4 to leave space for scrollbar
 				if (this.ptyProcess && this.ptyProcess.stdio[3]) {
-					const cmdio = this.ptyProcess.stdio[3] as any;
-					if (cmdio && typeof cmdio.write === 'function') {
-						const ptyCols = Math.max(1, cols - 4); // -4 for scrollbar space
-						cmdio.write(`${ptyCols}x${rows}\n`);
-					}
+					const cmdio = this.ptyProcess.stdio[3] as Writable;
+					const ptyCols = Math.max(1, cols - 4); // -4 for scrollbar space
+					cmdio.write(`${ptyCols}x${rows}\n`);
 				}
 			} catch (error) {
 				console.error("Resize failed:", error);
@@ -126,11 +124,11 @@ export class TerminalView extends ItemView {
 		const resizeObserver = new ResizeObserver((entries) => {
 			for (const entry of entries) {
 				// Skip if container has zero size
-				if (entry.contentBoxSize) {
-					const size = Array.isArray(entry.contentBoxSize)
-						? entry.contentBoxSize[0]
-						: entry.contentBoxSize;
-					if (size.blockSize <= 0 || size.inlineSize <= 0) {
+				const boxSize = entry.contentBoxSize;
+				if (boxSize) {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+					const { blockSize, inlineSize } = Array.isArray(boxSize) ? boxSize[0] : boxSize;
+					if (blockSize <= 0 || inlineSize <= 0) {
 						continue;
 					}
 				}
@@ -159,6 +157,16 @@ export class TerminalView extends ItemView {
 			this.ptyProcess.kill();
 			this.ptyProcess = null;
 		}
+
+		// Clean up old event listeners to prevent duplicates
+		for (const disposable of this.disposables) {
+			try {
+				disposable.dispose();
+			} catch (error) {
+				console.error("Error disposing event listener:", error);
+			}
+		}
+		this.disposables = [];
 
 		// Clear terminal
 		if (this.terminal) {
@@ -225,7 +233,7 @@ export class TerminalView extends ItemView {
 
 			// Handle process exit
 			this.ptyProcess.on("exit", (code, signal) => {
-				console.log(`PTY process exited with code ${code}, signal ${signal}`);
+				console.debug(`PTY process exited with code ${code}, signal ${signal}`);
 			});
 
 			// Trigger initial resize after PTY is ready

@@ -1,7 +1,7 @@
 {
 	"id": "claude-code",
 	"name": "Claude Code",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"minAppVersion": "0.15.0",
 	"description": "Launch Claude Code terminal directly from Obsidian - embedded or external",
 	"author": "Ilya Zhidkov",
