@@ -10,6 +10,7 @@ export interface ClaudeCodeSettings {
 	// External terminal settings
 	externalTerminal: "auto" | "warp" | "iterm" | "terminal" | "custom";
 	customTerminalCommand: string;
+	warpBehavior: "new-window" | "new-tab";
 }
 
 export const DEFAULT_SETTINGS: ClaudeCodeSettings = {
@@ -18,6 +19,7 @@ export const DEFAULT_SETTINGS: ClaudeCodeSettings = {
 	autoStartClaude: true,
 	externalTerminal: "auto",
 	customTerminalCommand: "",
+	warpBehavior: "new-window",
 };
 
 export class ClaudeCodeSettingTab extends PluginSettingTab {
@@ -104,6 +106,23 @@ export class ClaudeCodeSettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.customTerminalCommand)
 						.onChange(async (value) => {
 							this.plugin.settings.customTerminalCommand = value;
+							await this.plugin.saveSettings();
+						})
+				);
+		}
+
+		// Warp-specific settings
+		if (this.plugin.settings.externalTerminal === "warp" || this.plugin.settings.externalTerminal === "auto") {
+			new Setting(containerEl)
+				.setName("Warp behavior")
+				.setDesc("How to open Warp terminal")
+				.addDropdown((dropdown) =>
+					dropdown
+						.addOption("new-window", "New window")
+						.addOption("new-tab", "New tab")
+						.setValue(this.plugin.settings.warpBehavior)
+						.onChange(async (value) => {
+							this.plugin.settings.warpBehavior = value as ClaudeCodeSettings["warpBehavior"];
 							await this.plugin.saveSettings();
 						})
 				);

@@ -8,6 +8,7 @@ if you want to view the source, please visit the github repository of this plugi
 
 const prod = Bun.argv.includes("--production");
 
+// @ts-ignore
 const result = await Bun.build({
 	entrypoints: ["./src/main.ts"],
 	outdir: ".",
@@ -44,7 +45,9 @@ if (!result.success) {
 }
 
 // Add banner to output
+// @ts-ignore
 const mainJs = await Bun.file("main.js").text();
+// @ts-ignore
 await Bun.write("main.js", banner + "\n" + mainJs);
 
 console.log(prod ? "Production build complete!" : "Build complete!");

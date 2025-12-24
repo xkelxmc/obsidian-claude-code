@@ -4,6 +4,7 @@ import {
 	ClaudeCodeSettingTab,
 	DEFAULT_SETTINGS,
 } from "./settings";
+import { openExternalTerminal } from "./external-terminal";
 
 export default class ClaudeCodePlugin extends Plugin {
 	settings: ClaudeCodeSettings;
@@ -17,7 +18,7 @@ export default class ClaudeCodePlugin extends Plugin {
 		});
 
 		this.addRibbonIcon("external-link", "Open external terminal", () => {
-			this.openExternalTerminal();
+			void this.openExternalTerminal();
 		});
 
 		// Add commands
@@ -33,7 +34,7 @@ export default class ClaudeCodePlugin extends Plugin {
 			id: "open-external-terminal",
 			name: "Open external terminal",
 			callback: () => {
-				this.openExternalTerminal();
+				void this.openExternalTerminal();
 			},
 		});
 
@@ -49,7 +50,7 @@ export default class ClaudeCodePlugin extends Plugin {
 		this.settings = Object.assign(
 			{},
 			DEFAULT_SETTINGS,
-			(await this.loadData()) as Partial<ClaudeCodeSettings>
+			(await this.loadData()) as Partial<ClaudeCodeSettings>,
 		);
 	}
 
@@ -62,8 +63,13 @@ export default class ClaudeCodePlugin extends Plugin {
 		// TODO: Implement embedded terminal with xterm.js + bun-pty
 	}
 
-	openExternalTerminal() {
-		new Notice("External terminal - coming soon!");
-		// TODO: Implement external terminal launcher
+	async openExternalTerminal() {
+		const adapter = this.app.vault.adapter;
+		if (!("getBasePath" in adapter)) {
+			new Notice("Vault path not available");
+			return;
+		}
+		const vaultPath = (adapter as { getBasePath: () => string }).getBasePath();
+		await openExternalTerminal(this.settings, vaultPath);
 	}
 }
