@@ -18,5 +18,16 @@ main.js
 # obsidian
 data.json
 
+# Example vault - ignore workspace and cache files
+example/.obsidian/workspace.json
+example/.obsidian/workspace-mobile.json
+example/.obsidian/cache/
+example/.obsidian/hotkeys.json
+
+# Example vault - ignore built plugin files (will be copied by dev:install)
+example/.obsidian/plugins/claude-code/main.js
+example/.obsidian/plugins/claude-code/manifest.json
+example/.obsidian/plugins/claude-code/styles.css
+
 # Exclude macOS Finder (System Explorer) View States
 .DS_Store
