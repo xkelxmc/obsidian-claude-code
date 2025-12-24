@@ -71,7 +71,7 @@ bun run lint
 ## Tech Stack
 
 - **Runtime**: Bun
-- **Terminal**: xterm.js + bun-pty
+- **Terminal**: xterm.js + Python PTY wrapper
 - **External Launcher**: open (cross-platform)
 - **Language**: TypeScript
 
