@@ -8,6 +8,20 @@ if you want to view the source, please visit the github repository of this plugi
 
 const prod = Bun.argv.includes("--production");
 
+// Custom plugin to load .py files as text
+const textLoader = {
+	name: "text-loader",
+	setup(build: any) {
+		build.onLoad({ filter: /\.py$/ }, async (args: any) => {
+			const text = await Bun.file(args.path).text();
+			return {
+				contents: `export default ${JSON.stringify(text)}`,
+				loader: "js",
+			};
+		});
+	},
+};
+
 // @ts-ignore
 const result = await Bun.build({
 	entrypoints: ["./src/main.ts"],
@@ -16,6 +30,7 @@ const result = await Bun.build({
 	format: "cjs",
 	minify: prod,
 	sourcemap: prod ? "none" : "inline",
+	plugins: [textLoader],
 	external: [
 		"obsidian",
 		"electron",
